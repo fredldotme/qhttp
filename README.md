@@ -66,6 +66,12 @@ int main(int argc, char** argv) {
 }
 ```
 
+to make a simple `https` server, simply add:
+```cpp
+    // load server private key and certificate from Qt resource
+    server.setSslConfig(qhttp::ssl::Config{":/key", ":/cert"});
+```
+
 to request weather information by **HTTP client**:
 ```cpp
 int main(int argc, char** argv) {
@@ -75,7 +81,7 @@ int main(int argc, char** argv) {
     QHttpClient client(&app);
     QUrl        weatherUrl("http://wttr.in/tehran");
 
-    client.request(qhttp::EHTTP_GET, weatherUrl, [](QHttpResponse* res) {
+    client.get(weatherUrl, [](QHttpResponse* res) {
         // response handler, called when the incoming HTTP headers are ready
 
         // gather HTTP response data (HTTP body)
@@ -83,7 +89,7 @@ int main(int argc, char** argv) {
 
         // when all data in HTTP response have been read:
         res->onEnd([&]() {
-            writeTo("weather.html", res->collectedData());
+            writeTo("weather.html", res->body());
 
             // done! now quit the application
             qApp->quit();
@@ -130,6 +136,7 @@ int main(int argc, char** argv) {
 - **Asynchronous** and **non-blocking**. You can handle thousands of concurrent
  HTTP connections efficiently by a single thread, although a multi-threaded HTTP
  server is easy to implement.
+- **TLS/SSL** support for `qhttp::server::QHttpServer`
 - **high throughput**, I have tried the `QHttp` and
 [gason++](https://github.com/azadkuh/gason--) to implement a REST/Json web
  service on an Ubuntu VPS (dual core + 512MB ram) with more than **5800**
@@ -157,6 +164,19 @@ $qhttp/> ./update-dependencies.sh
 # now build the library and the examples
 $qhttp/> qmake -r qhttp.pro
 $qhttp/> make -j 8
+```
+
+To set install prefix pass PREFIX variable to qmake:
+
+```
+qmake PREFIX=/usr
+```
+
+By default, only the build of QHttp server is enabled, to enable the build of
+QHttp client, pass ENABLE_QHTTP_CLIENT=1 to qmake:
+
+```
+qmake ENABLE_QHTTP_CLIENT=1
 ```
 
 ## Multi-threading

@@ -10,10 +10,11 @@
 #define QHTTPSERVER_PRIVATE_HPP
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qhttpserver.hpp"
-#include "qhttpserverconnection.hpp"
-#include "qhttpserverrequest.hpp"
-#include "qhttpserverresponse.hpp"
+#include "qhttp/qhttpserver.hpp"
+#include "qhttp/qhttpserverconnection.hpp"
+#include "qhttp/qhttpserverrequest.hpp"
+#include "qhttp/qhttpserverresponse.hpp"
+#include "qhttp/qhttpsslconfig.hpp"
 
 #include <QTcpServer>
 #include <QLocalServer>
@@ -51,28 +52,26 @@ public:
 
 public:
     quint32         itimeOut = 0;
-    TServerHandler  ihandler = nullptr;
+    ServerHandler   ihandler = nullptr;
 
     TBackend        ibackend = ETcpSocket;
 
     TTcpServer      itcpServer;
     TLocalServer    ilocalServer;
 
-public:
-    explicit    QHttpServerPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+    ssl::Config     isslConfig;
 
-    virtual    ~QHttpServerPrivate() {
-        QHTTP_LINE_DEEPLOG
-    }
+public:
+    explicit    QHttpServerPrivate() = default;
+
+    virtual    ~QHttpServerPrivate() = default;
 
     void        initialize(TBackend backend, QHttpServer* parent) {
         ibackend = backend;
 
         if ( ibackend == ETcpSocket ) {
-            itcpServer.reset( new BackendServer<QTcpServer>(parent) );
             ilocalServer.reset( nullptr );
+            itcpServer.reset( new BackendServer<QTcpServer>(parent) );
 
         } else if ( ibackend == ELocalSocket ) {
             itcpServer.reset( nullptr );
